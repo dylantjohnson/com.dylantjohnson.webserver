@@ -9,7 +9,7 @@ module my.module {
 ```
 App.java
 ```java
-import com.dylantjohnson.webserver.WebServer;
+import com.dylantjohnson.webserver.WebServerBuilder;
 import com.dylantjohnson.webserver.WebServerCreationException;
 import java.io.File;
 
@@ -18,7 +18,11 @@ public class App {
         var domain = "dylantjohnson.com";
         var keystore = new File(args[0]);
         var password = args[1];
-        var server = new WebServer(domain, keystore, password);
+        var server = new WebServerBuilder()
+            .setDomain(domain)
+            .useHttp()
+            .useHttps(keystore, password)
+            .build();
         server.start();
     }
 }

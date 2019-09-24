@@ -9,7 +9,7 @@ import java.io.IOException;
  * used by this server to redirect any requests for the HTTP server to the 
  * HTTPS server.
  */
-class RedirectHandler implements HttpHandler {
+class RedirectHandler extends RouteHandler {
     private String domain;
     
     /**
@@ -22,15 +22,12 @@ class RedirectHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        var path = exchange.getRequestURI();
-        var response = "Redirecting to https".getBytes();
-        var headers = exchange.getResponseHeaders();
-        headers.set("Location",
-            String.format("https://%s%s", this.domain, path));
-        exchange.sendResponseHeaders(301, response.length);
-        var output = exchange.getResponseBody();
-        output.write(response);
-        exchange.close();
+    public RouteResponse run(RouteRequest request) throws Exception {
+        return new RouteResponseBuilder()
+            .setStatus(ResponseStatus.MOVED)
+            .setHeader(HttpHeader.LOCATION,
+                String.format("https://%s%s", this.domain, request.getPath()))
+            .setContent("redirecting to https")
+            .build();
     }
 }

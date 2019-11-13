@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpsServer;
  * server.
  */
 public class WebServer {
+    private final int stopDelaySeconds = 5;
     private HttpsServer httpsServer = null;
     private HttpServer httpServer = null;
 
@@ -36,6 +37,19 @@ public class WebServer {
             System.out.println(String.format("Running HTTPS server on %s",
                 this.httpsServer.getAddress()));
             this.httpsServer.start();
+        }
+    }
+
+    /**
+     * Stop the webserver.
+     */
+    public void stop() {
+        if (this.httpServer != null) {
+            this.httpServer.stop(stopDelaySeconds);
+        }
+
+        if (this.httpsServer != null) {
+            this.httpsServer.stop(stopDelaySeconds);
         }
     }
 }

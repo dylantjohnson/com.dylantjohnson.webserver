@@ -1,109 +1,101 @@
 package com.dylantjohnson.webserver;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.*;
 
 /**
- * Builder class for creating a {@link RouteResponse}.
+ * Builder class for generating a RouteResponse.
  */
 public class RouteResponseBuilder {
-    private ResponseStatus status = ResponseStatus.OK;
-    private long length = 0;
-    private InputStream stream = InputStream.nullInputStream();
-    private ArrayList<ResponseHeader> responseHeaders = new ArrayList<>();
+    private RouteResponse.Status mStatus = RouteResponse.Status.OK;
+    private long mLength = 0L;
+    private InputStream mBody;
 
     /**
-     * Build the response.
+     * Build a response with the configured content.
      *
-     * @return the response data
+     * @return the built response
+     * @throws NullPointerException if the response body has not been set
      */
     public RouteResponse build() {
-        return new RouteResponse(this.status, this.length, this.stream,
-            this.responseHeaders);
-    }
-
-    /**
-     * Set the response code/status.
-     *
-     * @param status the status of the response
-     * @return a new RouteResponseBuilder with updated status
-     */
-    public RouteResponseBuilder setStatus(ResponseStatus status) {
-        var builder = this.copy();
-        builder.status = status;
-        return builder;
-    }
-
-    /**
-     * Set the response content using a string.
-     *
-     * @param content the content of the response
-     * @return a new RouteResponseBuilder with updated content
-     */
-    public RouteResponseBuilder setContent(String content) {
-        var body = content.getBytes();
-        var builder = this.copy();
-        builder.length = body.length;
-        builder.stream = new ByteArrayInputStream(body);
-        return builder;
-    }
-
-    /**
-     * Set the response content using a file.
-     *
-     * @param file the file to send
-     * @return a new RouteResponseBuilder with updated content
-     */
-    public RouteResponseBuilder setContent(File file) {
-        var builder = this.copy();
-        builder.length = file.length();
-        try {
-            builder.stream = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
-            builder.stream = InputStream.nullInputStream();
+        if (mBody == null) {
+            throw new NullPointerException("No response body set.");
         }
-        return builder;
+        return new RouteResponse(mStatus, mLength, mBody);
     }
 
     /**
-     * Add a response header.
+     * Get the status of this response.
      *
-     * @param header the type of header
-     * @param value the value for the header
-     * @return a new RouteResponseBuilder with added header
+     * @return the response status code
      */
-    public RouteResponseBuilder addHeader(HttpHeader header, String value) {
-        var builder = this.copy();
-        builder.responseHeaders.add(new ResponseHeader(true, header, value));
-        return builder;
+    RouteResponse.Status getStatus() {
+        return mStatus;
     }
 
     /**
-     * Set/overwrite a response header.
+     * Get the length of this response.
      *
-     * @param header the type of header
-     * @param value the value for the header
-     * @return a new RouteResponseBuilder with updated header
+     * @return the size (in bytes) of the response body
      */
-    public RouteResponseBuilder setHeader(HttpHeader header, String value) {
-        var builder = this.copy();
-        builder.responseHeaders.add(new ResponseHeader(false, header, value));
-        return builder;
+    long getLength() {
+        return mLength;
     }
 
     /**
-     * Helper method for creating new instances.
+     * Get the body of this response.
+     *
+     * @return the body of this response as a stream
      */
-    private RouteResponseBuilder copy() {
-        var builder = new RouteResponseBuilder();
-        builder.status = this.status;
-        builder.length = this.length;
-        builder.stream = this.stream;
-        builder.responseHeaders = this.responseHeaders;
-        return builder;
+    InputStream getBody() {
+        return mBody;
+    }
+
+    /**
+     * Set the status of this response.
+     *
+     * @param status the status
+     * @return this builder instance to enable easy method chaining
+     */
+    public RouteResponseBuilder setStatus(RouteResponse.Status status) {
+        mStatus = status;
+        return this;
+    }
+
+    /**
+     * Set the body of this response.
+     *
+     * @param body the body of the response
+     * @return this builder instance to enable easy method chaining
+     * @throws Exception if the body has already been set for this response
+     */
+    public RouteResponseBuilder setBody(String body) throws Exception {
+        assertBodyUnset();
+        byte[] bodyBuffer = body.getBytes();
+        mBody = new ByteArrayInputStream(bodyBuffer);
+        mLength = bodyBuffer.length;
+        return this;
+    }
+
+    /**
+     * Set the body of this response.
+     *
+     * @param body the file to send as the body of this response
+     * @return this builder instance to enable easy method chaining
+     * @throws Exception if the body has already been set for this response
+     */
+    public RouteResponseBuilder setBody(File body) throws Exception {
+        assertBodyUnset();
+        mBody = new FileInputStream(body);
+        mLength = body.length();
+        return this;
+    }
+
+    /**
+     * Throw an exception if the response body has been set.
+     */
+    private void assertBodyUnset() throws Exception {
+        if (mBody != null) {
+            throw new Exception("Body already set.");
+        }
     }
 }

@@ -1,65 +1,76 @@
 package com.dylantjohnson.webserver;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
 
 /**
- * The data to send back in response to an HTTP request.
- * <p>
- * To build a response, see {@link RouteResponseBuilder}.
+ * This class represents a response to a web request.
  */
 public class RouteResponse {
-    private ResponseStatus status;
-    private long length;
-    private InputStream stream;
-    private List<ResponseHeader> responseHeaders;
+    /**
+     * All of the possible status codes.
+     */
+    enum Status {
+        ERROR(500), OK(200);
+
+        private int mCode;
+
+        private Status(int code) {
+            mCode = code;
+        }
+
+        /**
+         * Get the error code number.
+         *
+         * @return the error code
+         */
+        public int getCode() {
+            return mCode;
+        }
+    }
+
+    private Status mStatus;
+    private long mLength;
+    private InputStream mBody;
 
     /**
-     * Internal constructor. Use {@link RouteResponseBuilder} to build a
-     * response.
+     * Create a response.
+     * <p>
+     * This constructor is for internal use. Use {@link RouteResponseBuilder}.
+     *
+     * @param status the status for the response
+     * @param length the size of the response body
+     * @param body the response body
      */
-    RouteResponse(ResponseStatus status, long length, InputStream stream,
-            List<ResponseHeader> responseHeaders) {
-        this.status = status;
-        this.length = length;
-        this.stream = stream;
-        this.responseHeaders = responseHeaders;
+    RouteResponse(Status status, long length, InputStream body) {
+        mStatus = status;
+        mLength = length;
+        mBody = body;
     }
 
     /**
-     * Get the HTTP status of the response.
+     * Get the status.
      *
-     * @return the response status
+     * @return the status code
      */
-    public ResponseStatus getStatus() {
-        return this.status;
+    Status getStatus() {
+        return mStatus;
     }
 
     /**
-     * Get the length of the response.
+     * Get the length.
      *
-     * @return the response size in bytes
+     * @return the length (in bytes) of the response body
      */
-    public long getLength() {
-        return this.length;
+    long getLength() {
+        return mLength;
     }
 
     /**
-     * Get the data stream of the response.
+     * Get the body.
      *
-     * @return the response data stream
+     * @return a stream of the response body
      */
-    public InputStream getStream() {
-        return this.stream;
-    }
-
-    /**
-     * Get the HTTP headers for this response.
-     *
-     * @return a list of headers
-     */
-    public List<ResponseHeader> getHeaders() {
-        return new ArrayList<ResponseHeader>(this.responseHeaders);
+    InputStream getBody() {
+        return mBody;
     }
 }

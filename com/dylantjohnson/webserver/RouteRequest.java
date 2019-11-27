@@ -1,27 +1,48 @@
 package com.dylantjohnson.webserver;
 
-import com.sun.net.httpserver.HttpExchange;
-import java.net.URI;
+import com.sun.net.httpserver.*;
+import java.net.*;
 
 /**
- * Information about an HTTP request.
+ * This class represents a web request.
  */
 public class RouteRequest {
-    private URI path;
+    /**
+     * All of the possible request method types.
+     */
+    enum Method {
+        GET, POST;
+    }
+
+    private HttpExchange mExchange;
 
     /**
-     * Internal constructor. This class shouldn't be instantiated manually.
+     * Construct a RouteRequest from an HttpExchange.
+     *
+     * @param exchange the exchange to wrap
      */
-    RouteRequest(HttpExchange request) {
-        this.path = request.getRequestURI();
+    RouteRequest(HttpExchange exchange) {
+        mExchange = exchange;
     }
 
     /**
-     * Get the path of this request.
+     * Get the method type of this request.
      *
-     * @return the request path
+     * @return the method type
      */
-    public URI getPath() {
-        return this.path;
+    public Method getMethod() {
+        if (mExchange.getRequestMethod().equalsIgnoreCase("get")) {
+            return Method.GET;
+        }
+        return Method.POST;
+    }
+
+    /**
+     * Get the URI of this request.
+     *
+     * @return the request URI
+     */
+    public URI getUri() {
+        return mExchange.getRequestURI();
     }
 }
